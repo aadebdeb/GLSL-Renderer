@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>Sample01</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script id="source" type="x-shader/x-fragment">
+      precision mediump float;
+
+      // uniform variables defined by the libary
+      uniform vec2 uResolution;
+      uniform float uTime;
+      uniform vec2 uMousePosition;
+      uniform bool uMousePressed;
+
+      // uniform variables defined by user
+      uniform vec3 uColor1;
+      uniform vec3 uColor2;
+
+      void main() {
+        vec2 pos = gl_FragCoord.xy / max(uResolution.x, uResolution.y);
+        vec2 mouse = uMousePosition / max(uResolution.x, uResolution.y);
+        float d = distance(pos, mouse);
+        float v = sin(d * 20.0 - uTime * 0.003) * 0.5 + 0.5;
+        gl_FragColor = uMousePressed ? vec4((1.0 - v) * uColor1 + v * uColor2, 1.0) :
+                                       vec4((1.0 - v) * uColor2 + v * uColor1, 1.0);
+      }
+    </script>
+    <script src="../index.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var glsl = new GLSL({
+          width: window.innerWidth,
+          height: window.innerHeight,
+          source: document.getElementById('source').text
+        });
+
+        window.addEventListener('resize', function() {
+          glsl.setSize(window.innerWidth, window.innerHeight);
+        }, false);
+
+        document.body.appendChild(glsl.getCanvas());
+
+        glsl.setUniform('3fv', 'uColor1', [0.0, 0.5, 0.5]);
+        glsl.setUniform('3fv', 'uColor2', [1.0, 0.5, 0.5]);
+
+        var render = function() {
+          glsl.render();
+          requestAnimationFrame(render);
+        };
+        requestAnimationFrame(render);
+      }, false);
+    </script>
+  </body>
+</html>
